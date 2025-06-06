@@ -1,0 +1,17 @@
+[
+  {
+    "origin": [
+      "http://localhost:5173",
+      "https://*.webcontainer.io",
+      "https://zp1v56uxy8rdx5ypatb0ockcb9tr6a-oci3--5173--*.webcontainer-api.io",
+      "https://firebasestorage.googleapis.com"
+    ],
+    "method": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    "responseHeader": [
+      "Content-Type",
+      "Authorization",
+      "x-goog-meta-*"
+    ],
+    "maxAgeSeconds": 3600
+  }
+]

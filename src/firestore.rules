@@ -1,0 +1,117 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function hasUserId() {
+      return request.resource.data.userId == request.auth.uid;
+    }
+
+    function isAdmin() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isAnalyst() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'analyst';
+    }
+
+    function isManager() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'manager';
+    }
+
+    function isSpecialUser() {
+      return request.auth.token.email == 'slucas@anthea-rh.com' || request.auth.token.email == 'vgarau@anthea-rh.com' || request.auth.uid == 'a0yoYjd1EaO2jrZf42ZIo7583cf2';
+    }
+
+    function hasMonitoringAccess() {
+      return isAuthenticated() && (isAdmin() || isAnalyst() || isManager() || isSpecialUser());
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      
+      // Allow monitoring access to read all user data
+      allow list, get: if hasMonitoringAccess();
+    }
+
+    // Beneficiaires collection - Allow full access to all authenticated users
+    match /beneficiaires/{beneficiaireId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated();
+    }
+
+    // Offers collection - Allow full access to all authenticated users
+    match /offers/{offerId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated();
+      
+      // Allow monitoring access to read and update for URL correction
+      allow list, get: if hasMonitoringAccess();
+    }
+
+    // Companies collection - Allow full access to all authenticated users
+    match /companies/{companyId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated();
+    }
+
+    // Events collection - Allow full access to all authenticated users
+    match /events/{eventId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated();
+    }
+
+    // Documents collection
+    match /documents/{documentId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && (isOwner(resource.data.userId) || isAdmin());
+      
+      // Allow monitoring access to read and update for URL correction
+      allow list, get: if hasMonitoringAccess();
+    }
+
+    // Agencies collection
+    match /agencies/{agencyId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && hasUserId();
+      allow update, delete: if isAuthenticated() && (isOwner(resource.data.userId) || isAdmin());
+    }
+
+    // Candidates collection
+    match /candidates/{candidateId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && hasUserId();
+      allow update, delete: if isAuthenticated() && (isOwner(resource.data.userId) || isAdmin());
+      
+      // Allow monitoring access to read and update for URL correction
+      allow list, get: if hasMonitoringAccess();
+    }
+
+    // Folders collection
+    match /folders/{folderId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated();
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: false;
+    }
+  }
+}
