@@ -13,13 +13,56 @@ import {
 import { fr } from 'date-fns/locale';
 import FollowUpScheduler from '../components/FollowUpScheduler';
 
-// ... (rest of the imports and interfaces remain the same)
+interface Appointment {
+  id: number;
+  title: string;
+  time: string;
+  agency: string;
+  contact: string;
+  date: Date;
+}
 
 function Rendezvous() {
-  // État manquant ajouté ici :
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showFollowUp, setShowFollowUp] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
+
+  const appointments: Appointment[] = [
+    {
+      id: 1,
+      title: 'Entretien avec Monsieur Dupont',
+      time: '10:00',
+      agency: 'Agence Paris',
+      contact: 'dupont@example.com',
+      date: new Date(2025, 5, 7),
+    },
+    {
+      id: 2,
+      title: 'Suivi de candidature',
+      time: '14:00',
+      agency: 'Agence Lyon',
+      contact: 'contact@lyon.fr',
+      date: new Date(2025, 5, 7),
+    },
+    {
+      id: 3,
+      title: 'Réunion client',
+      time: '09:00',
+      agency: 'Agence Marseille',
+      contact: 'marseille@agence.fr',
+      date: new Date(2025, 5, 8),
+    },
+  ];
+
+  const getAppointmentsForDate = (date: Date) => {
+    return appointments.filter(
+      (apt) =>
+        apt.date.getFullYear() === date.getFullYear() &&
+        apt.date.getMonth() === date.getMonth() &&
+        apt.date.getDate() === date.getDate()
+    );
+  };
 
   const handleFollowUp = (appointment: Appointment) => {
     setSelectedCompany(appointment.title);
@@ -28,13 +71,10 @@ function Rendezvous() {
 
   const handleScheduleAction = (step: any) => {
     console.log('Action planifiée:', step);
-    // Ici, vous implémenteriez la logique pour planifier l'action
   };
 
   return (
     <div>
-      {/* ... (previous JSX remains the same until the appointments list) */}
-
       {selectedDate && (
         <div className="mt-8 space-y-8">
           <div className="bg-white rounded-xl shadow-sm">
@@ -67,9 +107,7 @@ function Rendezvous() {
                   </div>
                 ))}
                 {getAppointmentsForDate(selectedDate).length === 0 && (
-                  <p className="text-gray-500">
-                    Aucun rendez-vous prévu pour cette date
-                  </p>
+                  <p className="text-gray-500">Aucun rendez-vous prévu pour cette date</p>
                 )}
               </div>
             </div>
