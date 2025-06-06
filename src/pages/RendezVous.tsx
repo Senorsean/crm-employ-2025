@@ -1,13 +1,23 @@
 import React, { useState } from 'react';
 import { Plus, ChevronLeft, ChevronRight, Bell } from 'lucide-react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, addMonths, subMonths } from 'date-fns';
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  isSameMonth,
+  isToday,
+  addMonths,
+  subMonths,
+} from 'date-fns';
 import { fr } from 'date-fns/locale';
 import FollowUpScheduler from '../components/FollowUpScheduler';
 
 // ... (rest of the imports and interfaces remain the same)
 
 function Rendezvous() {
-  // ... (previous state declarations remain the same)
+  // État manquant ajouté ici :
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showFollowUp, setShowFollowUp] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
 
@@ -34,7 +44,10 @@ function Rendezvous() {
               </h2>
               <div className="space-y-4">
                 {getAppointmentsForDate(selectedDate).map((apt) => (
-                  <div key={apt.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div
+                    key={apt.id}
+                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                  >
                     <div>
                       <p className="font-medium">{apt.title}</p>
                       <p className="text-sm text-gray-500">{apt.time}</p>
@@ -54,7 +67,9 @@ function Rendezvous() {
                   </div>
                 ))}
                 {getAppointmentsForDate(selectedDate).length === 0 && (
-                  <p className="text-gray-500">Aucun rendez-vous prévu pour cette date</p>
+                  <p className="text-gray-500">
+                    Aucun rendez-vous prévu pour cette date
+                  </p>
                 )}
               </div>
             </div>
