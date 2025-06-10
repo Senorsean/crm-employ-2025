@@ -6,6 +6,7 @@ import { useCompaniesStore } from '../../stores/companiesStore';
 import { useOffersStore } from '../../stores/offersStore';
 import { useEventsStore } from '../../stores/eventsStore';
 import { useAppointmentsStore } from '../../stores/appointmentsStore';
+import { useAlertsStore } from '../../stores/alertsStore';
 import { auth } from '../../config/firebase';
 
 export function StatsPanel() {
@@ -15,6 +16,7 @@ export function StatsPanel() {
   const { offers } = useOffersStore();
   const { events } = useEventsStore();
   const { appointments } = useAppointmentsStore();
+  const { alerts } = useAlertsStore();
 
   // Filtrer les bénéficiaires pour ne compter que ceux de l'utilisateur connecté
   const userBeneficiaires = beneficiaires.filter(b => b.userId === auth.currentUser?.uid);
@@ -50,8 +52,17 @@ export function StatsPanel() {
   const pendingAppointments = appointments.filter(apt => apt.status === 'pending').length;
   const lateAppointments = appointments.filter(apt => apt.status === 'late').length;
 
+  // Count alerts by status (rendez-vous type only)
+  const pendingAlerts = alerts.filter(alert => 
+    alert.type === 'rendez-vous' && alert.status === 'pending'
+  ).length;
+  
+  const lateAlerts = alerts.filter(alert => 
+    alert.type === 'rendez-vous' && alert.status === 'late'
+  ).length;
+
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-2 md:gap-4 w-full">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-9 gap-2 md:gap-4 w-full">
       <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-white/20">
         <div className="flex items-center gap-1 md:gap-3">
           <Briefcase className="w-5 h-5 md:w-8 md:h-8 text-white shrink-0" />
@@ -106,19 +117,6 @@ export function StatsPanel() {
           </div>
         </div>
       </div>
-      {/* Placement rate card takes full width on mobile (2 columns) */}
-      <div className="col-span-2 sm:col-span-1 md:col-span-1 bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-white/20">
-        <div className="flex items-center gap-1 md:gap-3">
-          <FileCheck className="w-5 h-5 md:w-8 md:h-8 text-white shrink-0" />
-          <div className="min-w-0 flex-1">
-            <div className="text-base md:text-2xl font-bold text-white truncate">{placementRate}%</div>
-            <div className="text-xs md:text-sm text-white/80 truncate">Taux de placement</div>
-            <div className="text-xs text-white/70 hidden xs:block">
-              {employedCount}/{userBeneficiaires.length}
-            </div>
-          </div>
-        </div>
-      </div>
       
       {/* Nouveaux compteurs pour les rendez-vous */}
       <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-white/20">
@@ -136,6 +134,20 @@ export function StatsPanel() {
           <div className="min-w-0 flex-1">
             <div className="text-base md:text-2xl font-bold text-white truncate">{lateAppointments}</div>
             <div className="text-xs md:text-sm text-white/80 truncate">RDV en retard</div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Placement rate card takes full width on mobile (2 columns) */}
+      <div className="col-span-2 sm:col-span-1 md:col-span-1 bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-white/20">
+        <div className="flex items-center gap-1 md:gap-3">
+          <FileCheck className="w-5 h-5 md:w-8 md:h-8 text-white shrink-0" />
+          <div className="min-w-0 flex-1">
+            <div className="text-base md:text-2xl font-bold text-white truncate">{placementRate}%</div>
+            <div className="text-xs md:text-sm text-white/80 truncate">Taux de placement</div>
+            <div className="text-xs text-white/70 hidden xs:block">
+              {employedCount}/{userBeneficiaires.length}
+            </div>
           </div>
         </div>
       </div>
