@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { X, Bell } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { format, addMinutes } from 'date-fns';
@@ -9,11 +9,22 @@ interface AppointmentFormProps {
   onSubmit: (data: any) => void;
   onClose: () => void;
   selectedDate?: Date | null;
+  appointment?: any;
 }
 
-function AppointmentForm({ onSubmit, onClose, selectedDate }: AppointmentFormProps) {
-  const { register, handleSubmit, watch, formState: { errors } } = useForm({
-    defaultValues: {
+function AppointmentForm({ onSubmit, onClose, selectedDate, appointment }: AppointmentFormProps) {
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
+    defaultValues: appointment ? {
+      title: appointment.title,
+      date: format(appointment.date, 'yyyy-MM-dd'),
+      time: appointment.time,
+      agency: appointment.agency,
+      contact: appointment.contact,
+      priority: appointment.priority,
+      enableAlert: appointment.alert?.enabled || false,
+      alertTime: appointment.alert?.time || '15',
+      alertType: appointment.alert?.type || 'email'
+    } : {
       date: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
       time: '09:00',
       priority: 'normal',
@@ -42,7 +53,9 @@ function AppointmentForm({ onSubmit, onClose, selectedDate }: AppointmentFormPro
         <form onSubmit={handleSubmit(handleFormSubmit)}>
           <div className="p-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Nouveau rendez-vous</h2>
+              <h2 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                {appointment ? 'Modifier le rendez-vous' : 'Nouveau rendez-vous'}
+              </h2>
               <button type="button" onClick={onClose} className={`${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-500'}`}>
                 <X className="w-5 h-5" />
               </button>
@@ -204,7 +217,7 @@ function AppointmentForm({ onSubmit, onClose, selectedDate }: AppointmentFormPro
               type="submit"
               className="px-4 py-2 bg-gradient-anthea text-white rounded-xl hover:opacity-90 transition-opacity"
             >
-              Créer le rendez-vous
+              {appointment ? 'Enregistrer les modifications' : 'Créer le rendez-vous'}
             </button>
           </div>
         </form>

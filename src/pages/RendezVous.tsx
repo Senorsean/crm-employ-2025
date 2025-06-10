@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, ChevronLeft, ChevronRight, Bell, Calendar, MapPin, Clock, Building2, User } from 'lucide-react';
+import { Plus, ChevronLeft, ChevronRight, Bell, Calendar, MapPin, Clock, Building2, User, Edit, Trash2 } from 'lucide-react';
 import {
   format,
   startOfMonth,
@@ -53,6 +53,7 @@ function RendezVous() {
   const [showAppointmentForm, setShowAppointmentForm] = useState(false);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
   const { darkMode } = useThemeStore();
 
   // Load appointments and alerts (mock data for now)
@@ -148,25 +149,67 @@ function RendezVous() {
   };
 
   const handleAddAppointment = (data: any) => {
-    const newAppointment: Appointment = {
-      id: crypto.randomUUID(),
-      title: data.title,
-      date: new Date(`${data.date}T${data.time}`),
-      time: data.time,
-      agency: data.agency,
-      contact: data.contact,
-      priority: data.priority,
-      status: 'pending',
-      alert: data.enableAlert ? {
-        enabled: true,
-        time: data.alertTime,
-        type: data.alertType
-      } : undefined
-    };
+    const appointmentDate = new Date(`${data.date}T${data.time}`);
+    
+    if (editingAppointment) {
+      // Update existing appointment
+      const updatedAppointments = appointments.map(apt => 
+        apt.id === editingAppointment.id 
+          ? {
+              ...apt,
+              title: data.title,
+              date: appointmentDate,
+              time: data.time,
+              agency: data.agency,
+              contact: data.contact,
+              priority: data.priority,
+              alert: data.enableAlert ? {
+                enabled: true,
+                time: data.alertTime,
+                type: data.alertType
+              } : undefined
+            }
+          : apt
+      );
+      
+      setAppointments(updatedAppointments);
+      toast.success('Rendez-vous modifié avec succès');
+    } else {
+      // Create new appointment
+      const newAppointment: Appointment = {
+        id: crypto.randomUUID(),
+        title: data.title,
+        date: appointmentDate,
+        time: data.time,
+        agency: data.agency,
+        contact: data.contact,
+        priority: data.priority,
+        status: 'pending',
+        alert: data.enableAlert ? {
+          enabled: true,
+          time: data.alertTime,
+          type: data.alertType
+        } : undefined
+      };
 
-    setAppointments([...appointments, newAppointment]);
+      setAppointments([...appointments, newAppointment]);
+      toast.success('Rendez-vous créé avec succès');
+    }
+    
+    setEditingAppointment(null);
     setShowAppointmentForm(false);
-    toast.success('Rendez-vous créé avec succès');
+  };
+
+  const handleEditAppointment = (appointment: Appointment) => {
+    setEditingAppointment(appointment);
+    setShowAppointmentForm(true);
+  };
+
+  const handleDeleteAppointment = (id: string) => {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce rendez-vous ?')) {
+      setAppointments(appointments.filter(apt => apt.id !== id));
+      toast.success('Rendez-vous supprimé avec succès');
+    }
   };
 
   const getAppointmentsForDate = (date: Date) => {
@@ -196,7 +239,10 @@ function RendezVous() {
       <div className="flex justify-between items-center">
         <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Rendez-vous</h1>
         <button
-          onClick={() => setShowAppointmentForm(true)}
+          onClick={() => {
+            setEditingAppointment(null);
+            setShowAppointmentForm(true);
+          }}
           className="flex items-center px-4 py-2 bg-gradient-anthea text-white rounded-2xl hover:opacity-90 transition-opacity"
         >
           <Plus className="w-5 h-5 mr-2" />
@@ -291,6 +337,22 @@ function RendezVous() {
                           {apt.status === 'completed' ? 'Effectué' : 
                            apt.status === 'late' ? 'En retard' : 'En attente'}
                         </span>
+                        <div className="flex gap-2 ml-2">
+                          <button
+                            onClick={() => handleEditAppointment(apt)}
+                            className={`p-1.5 ${darkMode ? 'bg-blue-900 text-blue-300' : 'bg-blue-50 text-blue-600'} rounded-lg hover:${darkMode ? 'bg-blue-800' : 'bg-blue-100'} transition-colors`}
+                            title="Modifier"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteAppointment(apt.id)}
+                            className={`p-1.5 ${darkMode ? 'bg-red-900 text-red-300' : 'bg-red-50 text-red-600'} rounded-lg hover:${darkMode ? 'bg-red-800' : 'bg-red-100'} transition-colors`}
+                            title="Supprimer"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -412,8 +474,12 @@ function RendezVous() {
       {showAppointmentForm && (
         <AppointmentForm
           onSubmit={handleAddAppointment}
-          onClose={() => setShowAppointmentForm(false)}
+          onClose={() => {
+            setShowAppointmentForm(false);
+            setEditingAppointment(null);
+          }}
           selectedDate={selectedDate}
+          appointment={editingAppointment}
         />
       )}
     </div>
