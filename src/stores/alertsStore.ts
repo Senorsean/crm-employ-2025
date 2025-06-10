@@ -22,7 +22,7 @@ interface AlertsState {
   alerts: Alert[];
   isLoading: boolean;
   error: string | null;
-  addAlert: (alert: Omit<Alert, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  addAlert: (alert: Omit<Alert, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => Promise<string>;
   updateAlert: (id: string, alert: Partial<Alert>) => Promise<void>;
   deleteAlert: (id: string) => Promise<void>;
   loadAlerts: () => Promise<void>;
@@ -55,7 +55,7 @@ export const useAlertsStore = create<AlertsState>((set, get) => ({
         error: null
       }));
 
-      toast.success('Alerte créée avec succès');
+      return docRef.id;
     } catch (error) {
       console.error('Error adding alert:', error);
       const message = error instanceof Error ? error.message : 'Erreur lors de la création de l\'alerte';
@@ -85,8 +85,6 @@ export const useAlertsStore = create<AlertsState>((set, get) => ({
         ),
         error: null
       }));
-
-      toast.success('Alerte mise à jour avec succès');
     } catch (error) {
       console.error('Error updating alert:', error);
       const message = error instanceof Error ? error.message : 'Erreur lors de la mise à jour de l\'alerte';
@@ -107,7 +105,6 @@ export const useAlertsStore = create<AlertsState>((set, get) => ({
         alerts: state.alerts.filter(a => a.id !== id),
         error: null
       }));
-      toast.success('Alerte supprimée avec succès');
     } catch (error) {
       console.error('Error deleting alert:', error);
       const message = error instanceof Error ? error.message : 'Erreur lors de la suppression de l\'alerte';
@@ -163,8 +160,6 @@ export const useAlertsStore = create<AlertsState>((set, get) => ({
         ),
         error: null
       }));
-
-      toast.success('Statut de l\'alerte mis à jour avec succès');
     } catch (error) {
       console.error('Error updating alert status:', error);
       const message = error instanceof Error ? error.message : 'Erreur lors de la mise à jour du statut';
