@@ -1,18 +1,16 @@
 import React from 'react';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, parseISO, isValid } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { TrendingUp, Building, Calendar, Clock, AlertTriangle } from 'lucide-react';
+import { TrendingUp, Building } from 'lucide-react';
 import { useOffersStore } from '../../stores/offersStore';
 import { useCompaniesStore } from '../../stores/companiesStore';
 import { useBeneficiairesStore } from '../../stores/beneficiairesStore';
-import { useAppointmentsStore } from '../../stores/appointmentsStore';
 import { auth } from '../../config/firebase';
 
 export function WeeklyMonthlyStats() {
   const { offers } = useOffersStore();
   const { companies } = useCompaniesStore();
   const { beneficiaires } = useBeneficiairesStore();
-  const { appointments } = useAppointmentsStore();
 
   const now = new Date();
   const weekStart = startOfWeek(now, { weekStartsOn: 1 });
@@ -48,15 +46,6 @@ export function WeeklyMonthlyStats() {
   });
 
   const weeklyFilledOffers = weeklyOffers.filter(o => o.status === 'filled');
-  
-  // Weekly appointments stats
-  const weeklyAppointments = appointments.filter(apt => {
-    const aptDate = safeParseDate(apt.date);
-    return aptDate && aptDate >= weekStart && aptDate <= weekEnd;
-  });
-  
-  const weeklyPendingAppointments = weeklyAppointments.filter(apt => apt.status === 'pending').length;
-  const weeklyLateAppointments = weeklyAppointments.filter(apt => apt.status === 'late').length;
 
   const weeklyStats = {
     offersCollected: weeklyOffers.length,
@@ -66,8 +55,6 @@ export function WeeklyMonthlyStats() {
       return contactDate && contactDate >= weekStart && contactDate <= weekEnd;
     }).length,
     placementRate: placementRate,
-    pendingAppointments: weeklyPendingAppointments,
-    lateAppointments: weeklyLateAppointments,
     contractTypes: {
       collected: {
         cdi: weeklyOffers.filter(o => o.type === 'CDI').length,
@@ -89,15 +76,6 @@ export function WeeklyMonthlyStats() {
   });
 
   const monthlyFilledOffers = monthlyOffers.filter(o => o.status === 'filled');
-  
-  // Monthly appointments stats
-  const monthlyAppointments = appointments.filter(apt => {
-    const aptDate = safeParseDate(apt.date);
-    return aptDate && aptDate >= monthStart && aptDate <= monthEnd;
-  });
-  
-  const monthlyPendingAppointments = monthlyAppointments.filter(apt => apt.status === 'pending').length;
-  const monthlyLateAppointments = monthlyAppointments.filter(apt => apt.status === 'late').length;
 
   const monthlyStats = {
     offersCollected: monthlyOffers.length,
@@ -107,8 +85,6 @@ export function WeeklyMonthlyStats() {
       return contactDate && contactDate >= monthStart && contactDate <= monthEnd;
     }).length,
     placementRate: placementRate,
-    pendingAppointments: monthlyPendingAppointments,
-    lateAppointments: monthlyLateAppointments,
     contractTypes: {
       collected: {
         cdi: monthlyOffers.filter(o => o.type === 'CDI').length,
@@ -160,25 +136,6 @@ export function WeeklyMonthlyStats() {
               <div className="text-xs md:text-sm text-orange-600">Taux de placement</div>
               <div className="text-xs text-orange-600">{employedBeneficiaires.length} / {userBeneficiaires.length}</div>
             </div>
-            
-            {/* Rendez-vous hebdomadaires */}
-            <div className="col-span-2 p-3 md:p-4 bg-indigo-50 rounded-lg">
-              <div className="flex justify-between items-center">
-                <div>
-                  <div className="text-xl md:text-2xl font-bold text-indigo-600">Rendez-vous</div>
-                </div>
-                <div className="flex gap-2">
-                  <div className="flex items-center gap-1 bg-amber-100 px-2 py-1 rounded-full">
-                    <Clock className="w-3 h-3 text-amber-600" />
-                    <span className="text-xs text-amber-600 font-medium">{weeklyStats.pendingAppointments} en attente</span>
-                  </div>
-                  <div className="flex items-center gap-1 bg-red-100 px-2 py-1 rounded-full">
-                    <AlertTriangle className="w-3 h-3 text-red-600" />
-                    <span className="text-xs text-red-600 font-medium">{weeklyStats.lateAppointments} en retard</span>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -217,25 +174,6 @@ export function WeeklyMonthlyStats() {
               <div className="text-xl md:text-2xl font-bold text-orange-600">{monthlyStats.placementRate}%</div>
               <div className="text-xs md:text-sm text-orange-600">Taux de placement</div>
               <div className="text-xs text-orange-600">{employedBeneficiaires.length} / {userBeneficiaires.length}</div>
-            </div>
-            
-            {/* Rendez-vous mensuels */}
-            <div className="col-span-2 p-3 md:p-4 bg-indigo-50 rounded-lg">
-              <div className="flex justify-between items-center">
-                <div>
-                  <div className="text-xl md:text-2xl font-bold text-indigo-600">Rendez-vous</div>
-                </div>
-                <div className="flex gap-2">
-                  <div className="flex items-center gap-1 bg-amber-100 px-2 py-1 rounded-full">
-                    <Clock className="w-3 h-3 text-amber-600" />
-                    <span className="text-xs text-amber-600 font-medium">{monthlyStats.pendingAppointments} en attente</span>
-                  </div>
-                  <div className="flex items-center gap-1 bg-red-100 px-2 py-1 rounded-full">
-                    <AlertTriangle className="w-3 h-3 text-red-600" />
-                    <span className="text-xs text-red-600 font-medium">{monthlyStats.lateAppointments} en retard</span>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
