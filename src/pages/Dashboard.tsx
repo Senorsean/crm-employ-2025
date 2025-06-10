@@ -11,6 +11,8 @@ import { useOffersStore } from '../stores/offersStore';
 import { useBeneficiairesStore } from '../stores/beneficiairesStore';
 import { useCompaniesStore } from '../stores/companiesStore';
 import { useEventsStore } from '../stores/eventsStore';
+import { useAppointmentsStore } from '../stores/appointmentsStore';
+import { useAlertsStore } from '../stores/alertsStore';
 import { checkAdminStatus } from '../utils/checkAdminStatus';
 import { useThemeStore } from '../stores/themeStore';
 
@@ -27,6 +29,8 @@ function Dashboard() {
   const { loadBeneficiaires } = useBeneficiairesStore();
   const { loadCompanies } = useCompaniesStore();
   const { loadEvents } = useEventsStore();
+  const { loadAppointments } = useAppointmentsStore();
+  const { loadAlerts } = useAlertsStore();
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async user => {
@@ -47,14 +51,16 @@ function Dashboard() {
         loadOffers(),
         loadBeneficiaires(),
         loadCompanies(),
-        loadEvents()
+        loadEvents(),
+        loadAppointments(),
+        loadAlerts()
       ]).catch(error => {
         console.error('Error loading dashboard data:', error);
       });
     });
 
     return () => unsubscribe();
-  }, [navigate, loadOffers, loadBeneficiaires, loadCompanies, loadEvents]);
+  }, [navigate, loadOffers, loadBeneficiaires, loadCompanies, loadEvents, loadAppointments, loadAlerts]);
 
   // Récupérer le prénom de l'utilisateur
   const getFirstName = () => {
