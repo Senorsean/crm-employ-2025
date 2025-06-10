@@ -251,8 +251,11 @@ function RendezVous() {
     );
   }
 
-  // Filtrer les alertes pour n'afficher que celles de type 'rendez-vous'
-  const appointmentAlerts = alerts.filter(alert => alert.type === 'rendez-vous');
+  // Filtrer les alertes pour n'afficher que celles de type 'rendez-vous' et qui ne sont pas complétées
+  const appointmentAlerts = alerts.filter(alert => 
+    alert.type === 'rendez-vous' && 
+    alert.status !== 'completed'
+  );
   
   // Compter les alertes par statut
   const pendingAlertsCount = appointmentAlerts.filter(alert => alert.status === 'pending').length;
