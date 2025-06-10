@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Briefcase, Users, Building2, FileCheck, CalendarClock, Send, UserCheck, Clock, AlertCircle } from 'lucide-react';
 import { useAgenciesStore } from '../../stores/agenciesStore';
 import { useBeneficiairesStore } from '../../stores/beneficiairesStore';
@@ -8,6 +8,54 @@ import { useEventsStore } from '../../stores/eventsStore';
 import { useAppointmentsStore } from '../../stores/appointmentsStore';
 import { useAlertsStore } from '../../stores/alertsStore';
 import { auth } from '../../config/firebase';
+
+// Composant pour afficher un tooltip
+const Tooltip = ({ children, content }: { children: React.ReactNode, content: string }) => {
+  const [showTooltip, setShowTooltip] = useState(false);
+  
+  return (
+    <div 
+      className="relative"
+      onMouseEnter={() => setShowTooltip(true)}
+      onMouseLeave={() => setShowTooltip(false)}
+    >
+      {children}
+      {showTooltip && (
+        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap z-10">
+          {content}
+          <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Composant pour une carte de statistique avec tooltip
+const StatCard = ({ 
+  icon: Icon, 
+  value, 
+  label, 
+  tooltipContent 
+}: { 
+  icon: React.ElementType, 
+  value: number | string, 
+  label: string,
+  tooltipContent: string
+}) => {
+  return (
+    <Tooltip content={tooltipContent}>
+      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-white/20 cursor-help">
+        <div className="flex flex-col h-full justify-between">
+          <div className="flex items-center gap-1 md:gap-3 mb-1">
+            <Icon className="w-5 h-5 md:w-6 md:h-6 text-white shrink-0" />
+            <div className="text-base md:text-xl font-bold text-white truncate">{value}</div>
+          </div>
+          <div className="text-xs md:text-sm text-white/80 truncate mt-1">{label}</div>
+        </div>
+      </div>
+    </Tooltip>
+  );
+};
 
 export function StatsPanel() {
   const { agencies } = useAgenciesStore();
@@ -63,102 +111,78 @@ export function StatsPanel() {
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-9 gap-2 md:gap-4 w-full">
-      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-white/20">
-        <div className="flex flex-col h-full justify-between">
-          <div className="flex items-center gap-1 md:gap-3 mb-1">
-            <Briefcase className="w-5 h-5 md:w-6 md:h-6 text-white shrink-0" />
-            <div className="text-base md:text-xl font-bold text-white truncate">{activeOffers}</div>
-          </div>
-          <div className="text-xs md:text-sm text-white/80 truncate mt-1">Offres actives</div>
-        </div>
-      </div>
+      <StatCard 
+        icon={Briefcase} 
+        value={activeOffers} 
+        label="Offres actives" 
+        tooltipContent="Nombre d'offres d'emploi actives"
+      />
       
-      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-white/20">
-        <div className="flex flex-col h-full justify-between">
-          <div className="flex items-center gap-1 md:gap-3 mb-1">
-            <Users className="w-5 h-5 md:w-6 md:h-6 text-white shrink-0" />
-            <div className="text-base md:text-xl font-bold text-white truncate">{userBeneficiaires.length}</div>
-          </div>
-          <div className="text-xs md:text-sm text-white/80 truncate mt-1">Bénéficiaires</div>
-        </div>
-      </div>
+      <StatCard 
+        icon={Users} 
+        value={userBeneficiaires.length} 
+        label="Bénéficiaires" 
+        tooltipContent="Nombre total de bénéficiaires"
+      />
       
-      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-white/20">
-        <div className="flex flex-col h-full justify-between">
-          <div className="flex items-center gap-1 md:gap-3 mb-1">
-            <UserCheck className="w-5 h-5 md:w-6 md:h-6 text-white shrink-0" />
-            <div className="text-base md:text-xl font-bold text-white truncate">{employedCount}</div>
-          </div>
-          <div className="text-xs md:text-sm text-white/80 truncate mt-1">En emploi</div>
-        </div>
-      </div>
+      <StatCard 
+        icon={UserCheck} 
+        value={employedCount} 
+        label="En emploi" 
+        tooltipContent="Bénéficiaires ayant trouvé un emploi"
+      />
       
-      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-white/20">
-        <div className="flex flex-col h-full justify-between">
-          <div className="flex items-center gap-1 md:gap-3 mb-1">
-            <Send className="w-5 h-5 md:w-6 md:h-6 text-white shrink-0" />
-            <div className="text-base md:text-xl font-bold text-white truncate">{totalCandidates}</div>
-          </div>
-          <div className="text-xs md:text-sm text-white/80 truncate mt-1">Candidatures</div>
-        </div>
-      </div>
+      <StatCard 
+        icon={Send} 
+        value={totalCandidates} 
+        label="Candidatures" 
+        tooltipContent="Nombre total de candidatures soumises"
+      />
       
-      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-white/20">
-        <div className="flex flex-col h-full justify-between">
-          <div className="flex items-center gap-1 md:gap-3 mb-1">
-            <Building2 className="w-5 h-5 md:w-6 md:h-6 text-white shrink-0" />
-            <div className="text-base md:text-xl font-bold text-white truncate">{activeCompanies}</div>
-          </div>
-          <div className="text-xs md:text-sm text-white/80 truncate mt-1">Entreprises actives</div>
-        </div>
-      </div>
+      <StatCard 
+        icon={Building2} 
+        value={activeCompanies} 
+        label="Entreprises actives" 
+        tooltipContent="Nombre d'entreprises partenaires actives"
+      />
       
-      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-white/20">
-        <div className="flex flex-col h-full justify-between">
-          <div className="flex items-center gap-1 md:gap-3 mb-1">
-            <CalendarClock className="w-5 h-5 md:w-6 md:h-6 text-white shrink-0" />
-            <div className="text-base md:text-xl font-bold text-white truncate">{upcomingEvents}</div>
-          </div>
-          <div className="text-xs md:text-sm text-white/80 truncate mt-1">Événements à venir</div>
-        </div>
-      </div>
+      <StatCard 
+        icon={CalendarClock} 
+        value={upcomingEvents} 
+        label="Événements à venir" 
+        tooltipContent="Nombre d'événements planifiés"
+      />
       
-      {/* Nouveaux compteurs pour les rendez-vous */}
-      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-white/20">
-        <div className="flex flex-col h-full justify-between">
-          <div className="flex items-center gap-1 md:gap-3 mb-1">
-            <Clock className="w-5 h-5 md:w-6 md:h-6 text-white shrink-0" />
-            <div className="text-base md:text-xl font-bold text-white truncate">{pendingAppointments}</div>
-          </div>
-          <div className="text-xs md:text-sm text-white/80 truncate mt-1">RDV en attente</div>
-        </div>
-      </div>
+      <StatCard 
+        icon={Clock} 
+        value={pendingAppointments} 
+        label="RDV en attente" 
+        tooltipContent="Rendez-vous planifiés en attente"
+      />
       
-      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-white/20">
-        <div className="flex flex-col h-full justify-between">
-          <div className="flex items-center gap-1 md:gap-3 mb-1">
-            <AlertCircle className="w-5 h-5 md:w-6 md:h-6 text-white shrink-0" />
-            <div className="text-base md:text-xl font-bold text-white truncate">{lateAppointments}</div>
-          </div>
-          <div className="text-xs md:text-sm text-white/80 truncate mt-1">RDV en retard</div>
-        </div>
-      </div>
+      <StatCard 
+        icon={AlertCircle} 
+        value={lateAppointments} 
+        label="RDV en retard" 
+        tooltipContent="Rendez-vous en retard ou manqués"
+      />
       
-      {/* Placement rate card */}
-      <div className="col-span-2 sm:col-span-1 md:col-span-1 bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-white/20">
-        <div className="flex flex-col h-full justify-between">
-          <div className="flex items-center gap-1 md:gap-3 mb-1">
-            <FileCheck className="w-5 h-5 md:w-6 md:h-6 text-white shrink-0" />
-            <div className="text-base md:text-xl font-bold text-white truncate">{placementRate}%</div>
-          </div>
-          <div className="text-xs md:text-sm text-white/80 truncate mt-1">
-            Taux de placement
-            <span className="text-xs text-white/70 hidden xs:inline ml-1">
-              {employedCount}/{userBeneficiaires.length}
-            </span>
+      <Tooltip content="Pourcentage de bénéficiaires ayant trouvé un emploi">
+        <div className="col-span-2 sm:col-span-1 md:col-span-1 bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-white/20 cursor-help">
+          <div className="flex flex-col h-full justify-between">
+            <div className="flex items-center gap-1 md:gap-3 mb-1">
+              <FileCheck className="w-5 h-5 md:w-6 md:h-6 text-white shrink-0" />
+              <div className="text-base md:text-xl font-bold text-white truncate">{placementRate}%</div>
+            </div>
+            <div className="text-xs md:text-sm text-white/80 truncate mt-1">
+              Taux de placement
+              <span className="text-xs text-white/70 hidden xs:inline ml-1">
+                {employedCount}/{userBeneficiaires.length}
+              </span>
+            </div>
           </div>
         </div>
-      </div>
+      </Tooltip>
     </div>
   );
 }
