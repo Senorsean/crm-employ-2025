@@ -126,7 +126,7 @@ export function StatsPanel() {
       <StatCard 
         icon={Briefcase} 
         value={activeOffers} 
-        label="Offres actives" 
+        label="Offres" 
         fullLabel="Offres d'emploi actives"
         tooltipContent="Nombre d'offres d'emploi actives"
       />
@@ -134,7 +134,7 @@ export function StatsPanel() {
       <StatCard 
         icon={Users} 
         value={userBeneficiaires.length} 
-        label="Bénéficiaires" 
+        label="Total Bénéficiaires" 
         fullLabel="Bénéficiaires"
         tooltipContent="Nombre total de bénéficiaires"
       />
@@ -142,7 +142,7 @@ export function StatsPanel() {
       <StatCard 
         icon={UserCheck} 
         value={employedCount} 
-        label="En emploi" 
+        label="Bénéficiaires en emploi" 
         fullLabel="Bénéficiaires en emploi"
         tooltipContent="Bénéficiaires ayant trouvé un emploi"
       />
@@ -150,7 +150,7 @@ export function StatsPanel() {
       <StatCard 
         icon={Send} 
         value={totalCandidates} 
-        label="Candidatures" 
+        label="Total candidatures" 
         fullLabel="Candidatures soumises"
         tooltipContent="Nombre total de candidatures soumises"
       />
@@ -158,7 +158,7 @@ export function StatsPanel() {
       <StatCard 
         icon={Building2} 
         value={activeCompanies} 
-        label="Entreprises actives" 
+        label="Entreprises" 
         fullLabel="Entreprises actives"
         tooltipContent="Nombre d'entreprises partenaires actives"
       />
@@ -166,7 +166,7 @@ export function StatsPanel() {
       <StatCard 
         icon={CalendarClock} 
         value={upcomingEvents} 
-        label="Événements à venir" 
+        label="Événements" 
         fullLabel="Événements à venir"
         tooltipContent="Nombre d'événements planifiés"
       />
@@ -174,7 +174,7 @@ export function StatsPanel() {
       <StatCard 
         icon={Clock} 
         value={pendingAppointments} 
-        label="RDV en attente" 
+        label="RDV attente" 
         fullLabel="RDV en attente"
         tooltipContent="Rendez-vous planifiés en attente"
       />
@@ -182,7 +182,7 @@ export function StatsPanel() {
       <StatCard 
         icon={AlertCircle} 
         value={lateAppointments} 
-        label="RDV en retard" 
+        label="RDV retard" 
         fullLabel="RDV en retard"
         tooltipContent="Rendez-vous en retard ou manqués"
       />
@@ -195,7 +195,7 @@ export function StatsPanel() {
             <div className="min-w-0 flex-1">
               <div className="text-base md:text-xl font-bold text-white truncate">{placementRate}%</div>
               <div className="text-xs md:text-sm text-white/80 truncate">
-                Taux de placement
+                % de placement
                 <span className="text-xs text-white/70 hidden xs:inline ml-1">
                   {employedCount}/{userBeneficiaires.length}
                 </span>
