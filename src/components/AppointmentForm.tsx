@@ -1,22 +1,25 @@
 import React, { useEffect } from 'react';
 import { X, Bell } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-import { format, addMinutes } from 'date-fns';
+import { format, addMinutes, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useThemeStore } from '../stores/themeStore';
+import { Appointment } from '../stores/appointmentsStore';
+import { useAgenciesStore } from '../stores/agenciesStore';
 
 interface AppointmentFormProps {
   onSubmit: (data: any) => void;
   onClose: () => void;
   selectedDate?: Date | null;
-  appointment?: any;
+  appointment?: Appointment;
 }
 
 function AppointmentForm({ onSubmit, onClose, selectedDate, appointment }: AppointmentFormProps) {
-  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
+  const { agencies } = useAgenciesStore();
+  const { register, control, handleSubmit, watch, setValue, formState: { errors } } = useForm({
     defaultValues: appointment ? {
       title: appointment.title,
-      date: format(appointment.date, 'yyyy-MM-dd'),
+      date: format(new Date(appointment.date), 'yyyy-MM-dd'),
       time: appointment.time,
       agency: appointment.agency,
       contact: appointment.contact,
@@ -37,12 +40,21 @@ function AppointmentForm({ onSubmit, onClose, selectedDate, appointment }: Appoi
 
   const enableAlert = watch('enableAlert');
 
+  // Load agencies when component mounts
+  useEffect(() => {
+    if (agencies.length === 0) {
+      // Load agencies if not already loaded
+      // This assumes you have a loadAgencies function in your agenciesStore
+      // If not, you can remove this or implement it
+    }
+  }, [agencies]);
+
   const handleFormSubmit = (data: any) => {
     // Calculate alert date if enabled
     if (data.enableAlert) {
       const appointmentDate = new Date(`${data.date}T${data.time}`);
       const alertDate = addMinutes(appointmentDate, -parseInt(data.alertTime));
-      data.alertDate = alertDate;
+      data.alertDate = alertDate.toISOString();
     }
     onSubmit(data);
   };
@@ -114,12 +126,20 @@ function AppointmentForm({ onSubmit, onClose, selectedDate, appointment }: Appoi
                   className={`w-full rounded-xl border ${darkMode ? 'border-gray-700 bg-gray-700 text-white' : 'border-gray-200 text-gray-900'} p-2.5`}
                 >
                   <option value="">Sélectionner une agence</option>
-                  <option value="Marseille 4">Marseille 4</option>
-                  <option value="Marseille 16">Marseille 16</option>
-                  <option value="Vitrolles">Vitrolles</option>
-                  <option value="Marignane">Marignane</option>
-                  <option value="Arles">Arles</option>
-                  <option value="Brignoles">Brignoles</option>
+                  {agencies.length > 0 ? (
+                    agencies.map(agency => (
+                      <option key={agency.id} value={agency.name}>{agency.name}</option>
+                    ))
+                  ) : (
+                    <>
+                      <option value="Marseille 4">Marseille 4</option>
+                      <option value="Marseille 16">Marseille 16</option>
+                      <option value="Vitrolles">Vitrolles</option>
+                      <option value="Marignane">Marignane</option>
+                      <option value="Arles">Arles</option>
+                      <option value="Brignoles">Brignoles</option>
+                    </>
+                  )}
                 </select>
                 {errors.agency && (
                   <span className="text-sm text-red-600">{errors.agency.message}</span>

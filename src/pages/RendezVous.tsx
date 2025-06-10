@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, ChevronLeft, ChevronRight, Bell, Calendar, MapPin, Clock, Building2, User, Edit, Trash2 } from 'lucide-react';
+import { Plus, ChevronLeft, ChevronRight, Bell, Calendar, MapPin, Clock, Building2, User, Edit, Trash2, Loader2 } from 'lucide-react';
 import {
   format,
   startOfMonth,
@@ -18,123 +18,50 @@ import CalendarView from '../components/CalendarView';
 import { useThemeStore } from '../stores/themeStore';
 import { toast } from 'react-hot-toast';
 import { auth } from '../config/firebase';
-
-interface Appointment {
-  id: string;
-  title: string;
-  date: Date;
-  time: string;
-  agency: string;
-  contact: string;
-  priority: 'high' | 'medium' | 'normal';
-  status?: 'pending' | 'completed' | 'late';
-  alert?: {
-    enabled: boolean;
-    time: string;
-    type: 'email' | 'notification' | 'both';
-  };
-}
-
-interface Alert {
-  id: string;
-  type: 'relance' | 'rendez-vous';
-  company: string;
-  date: Date;
-  agency: string;
-  status: 'pending' | 'completed' | 'skipped' | 'late';
-  step: number;
-  description?: string;
-  action?: string;
-}
+import { useNavigate } from 'react-router-dom';
+import { useAppointmentsStore, Appointment } from '../stores/appointmentsStore';
+import { useAlertsStore, Alert } from '../stores/alertsStore';
 
 function RendezVous() {
+  const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showAppointmentForm, setShowAppointmentForm] = useState(false);
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [alerts, setAlerts] = useState<Alert[]>([]);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
   const { darkMode } = useThemeStore();
+  
+  // Get appointments and alerts from stores
+  const { 
+    appointments, 
+    isLoading: isLoadingAppointments, 
+    loadAppointments, 
+    addAppointment, 
+    updateAppointment, 
+    deleteAppointment,
+    updateAppointmentStatus
+  } = useAppointmentsStore();
+  
+  const { 
+    alerts, 
+    isLoading: isLoadingAlerts, 
+    loadAlerts, 
+    updateAlertStatus 
+  } = useAlertsStore();
 
-  // Load appointments and alerts (mock data for now)
   useEffect(() => {
-    // Mock appointments data
-    const mockAppointments: Appointment[] = [
-      {
-        id: '1',
-        title: 'Entretien avec Tech Solutions',
-        date: new Date(2025, 5, 7),
-        time: '10:00',
-        agency: 'Marseille 4',
-        contact: 'Marie Dupont',
-        priority: 'high',
-        status: 'pending',
-        alert: {
-          enabled: true,
-          time: '15',
-          type: 'email'
-        }
-      },
-      {
-        id: '2',
-        title: 'Suivi de candidature Logistique Express',
-        date: new Date(2025, 5, 7),
-        time: '14:00',
-        agency: 'Marseille 16',
-        contact: 'Jean Martin',
-        priority: 'medium',
-        status: 'pending'
-      },
-      {
-        id: '3',
-        title: 'Réunion client Santé Plus',
-        date: new Date(2025, 5, 8),
-        time: '09:00',
-        agency: 'Vitrolles',
-        contact: 'Sophie Bernard',
-        priority: 'normal',
-        status: 'pending'
-      },
-      {
-        id: '4',
-        title: 'Présentation Anthea RH',
-        date: new Date(2025, 5, 6),
-        time: '11:30',
-        agency: 'Marseille 4',
-        contact: 'Thomas Petit',
-        priority: 'high',
-        status: 'completed'
+    const unsubscribe = auth.onAuthStateChanged(user => {
+      if (!user) {
+        navigate('/login');
+        return;
       }
-    ];
+      
+      // Load data from Firestore
+      loadAppointments();
+      loadAlerts();
+    });
 
-    // Mock alerts data
-    const mockAlerts: Alert[] = [
-      {
-        id: '1',
-        type: 'relance',
-        company: 'Tech Solutions',
-        date: new Date(2025, 5, 10),
-        agency: 'Marseille 4',
-        status: 'pending',
-        step: 1,
-        description: 'Premier suivi après la présentation des services Anthea',
-        action: 'Appeler le responsable RH'
-      },
-      {
-        id: '2',
-        type: 'relance',
-        company: 'Logistique Express',
-        date: new Date(2025, 5, 14),
-        agency: 'Marseille 16',
-        status: 'pending',
-        step: 2,
-        description: 'Envoi de la newsletter avec les profils disponibles'
-      }
-    ];
-
-    setAppointments(mockAppointments);
-    setAlerts(mockAlerts);
-  }, []);
+    return () => unsubscribe();
+  }, [navigate, loadAppointments, loadAlerts]);
 
   const handlePrevMonth = () => {
     setCurrentMonth(subMonths(currentMonth, 1));
@@ -148,56 +75,57 @@ function RendezVous() {
     setSelectedDate(date);
   };
 
-  const handleAddAppointment = (data: any) => {
-    const appointmentDate = new Date(`${data.date}T${data.time}`);
-    
-    if (editingAppointment) {
-      // Update existing appointment
-      const updatedAppointments = appointments.map(apt => 
-        apt.id === editingAppointment.id 
-          ? {
-              ...apt,
-              title: data.title,
-              date: appointmentDate,
-              time: data.time,
-              agency: data.agency,
-              contact: data.contact,
-              priority: data.priority,
-              alert: data.enableAlert ? {
-                enabled: true,
-                time: data.alertTime,
-                type: data.alertType
-              } : undefined
-            }
-          : apt
-      );
+  const handleAddAppointment = async (data: any) => {
+    try {
+      const appointmentDate = new Date(`${data.date}T${data.time}`);
       
-      setAppointments(updatedAppointments);
-      toast.success('Rendez-vous modifié avec succès');
-    } else {
-      // Create new appointment
-      const newAppointment: Appointment = {
-        id: crypto.randomUUID(),
-        title: data.title,
-        date: appointmentDate,
-        time: data.time,
-        agency: data.agency,
-        contact: data.contact,
-        priority: data.priority,
-        status: 'pending',
-        alert: data.enableAlert ? {
-          enabled: true,
-          time: data.alertTime,
-          type: data.alertType
-        } : undefined
-      };
-
-      setAppointments([...appointments, newAppointment]);
-      toast.success('Rendez-vous créé avec succès');
+      // Calculate alert date if enabled
+      let alertDate;
+      if (data.enableAlert) {
+        alertDate = new Date(appointmentDate);
+        alertDate.setMinutes(alertDate.getMinutes() - parseInt(data.alertTime));
+      }
+      
+      if (editingAppointment) {
+        // Update existing appointment
+        await updateAppointment(editingAppointment.id, {
+          title: data.title,
+          date: appointmentDate.toISOString(),
+          time: data.time,
+          agency: data.agency,
+          contact: data.contact,
+          priority: data.priority,
+          alert: data.enableAlert ? {
+            enabled: true,
+            time: data.alertTime,
+            type: data.alertType
+          } : undefined,
+          alertDate: alertDate?.toISOString()
+        });
+      } else {
+        // Create new appointment
+        await addAppointment({
+          title: data.title,
+          date: appointmentDate.toISOString(),
+          time: data.time,
+          agency: data.agency,
+          contact: data.contact,
+          priority: data.priority,
+          status: 'pending',
+          alert: data.enableAlert ? {
+            enabled: true,
+            time: data.alertTime,
+            type: data.alertType
+          } : undefined,
+          alertDate: alertDate?.toISOString()
+        });
+      }
+      
+      setEditingAppointment(null);
+      setShowAppointmentForm(false);
+    } catch (error) {
+      console.error('Error handling appointment:', error);
     }
-    
-    setEditingAppointment(null);
-    setShowAppointmentForm(false);
   };
 
   const handleEditAppointment = (appointment: Appointment) => {
@@ -205,34 +133,48 @@ function RendezVous() {
     setShowAppointmentForm(true);
   };
 
-  const handleDeleteAppointment = (id: string) => {
+  const handleDeleteAppointment = async (id: string) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer ce rendez-vous ?')) {
-      setAppointments(appointments.filter(apt => apt.id !== id));
-      toast.success('Rendez-vous supprimé avec succès');
+      try {
+        await deleteAppointment(id);
+      } catch (error) {
+        console.error('Error deleting appointment:', error);
+      }
     }
   };
 
   const getAppointmentsForDate = (date: Date) => {
-    return appointments.filter(
-      (apt) => isSameDay(apt.date, date)
-    );
+    return appointments.filter(apt => {
+      const aptDate = new Date(apt.date);
+      return isSameDay(aptDate, date);
+    });
   };
 
   const getAlertsForCalendar = () => {
     return appointments.map(apt => ({
-      date: apt.date,
-      status: apt.status || 'pending'
+      date: new Date(apt.date),
+      status: apt.status
     }));
   };
 
-  const handleUpdateStatus = (alertId: string, status: Alert['status']) => {
-    setAlerts(
-      alerts.map(alert => 
-        alert.id === alertId ? { ...alert, status } : alert
-      )
-    );
-    toast.success(`Alerte mise à jour avec succès`);
+  const handleUpdateStatus = async (alertId: string, status: Alert['status']) => {
+    try {
+      await updateAlertStatus(alertId, status);
+    } catch (error) {
+      console.error('Error updating alert status:', error);
+    }
   };
+
+  const isLoading = isLoadingAppointments || isLoadingAlerts;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+        <span className="ml-2 text-gray-600">Chargement des données...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -405,7 +347,7 @@ function RendezVous() {
                         </div>
                         <div className={`mt-1 flex items-center gap-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                           <Clock className="w-4 h-4" />
-                          <span>{format(alert.date, 'd MMMM yyyy', { locale: fr })}</span>
+                          <span>{format(new Date(alert.date), 'd MMMM yyyy', { locale: fr })}</span>
                         </div>
                         <div className={`mt-1 flex items-center gap-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                           <MapPin className="w-4 h-4" />
