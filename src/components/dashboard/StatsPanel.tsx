@@ -9,13 +9,13 @@ import { useAppointmentsStore } from '../../stores/appointmentsStore';
 import { useAlertsStore } from '../../stores/alertsStore';
 import { auth } from '../../config/firebase';
 
-// Composant pour afficher un tooltip
+// Composant pour afficher un tooltip (uniquement en desktop)
 const Tooltip = ({ children, content }: { children: React.ReactNode, content: string }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   
   return (
     <div 
-      className="relative"
+      className="relative hidden md:block"
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
     >
@@ -30,30 +30,42 @@ const Tooltip = ({ children, content }: { children: React.ReactNode, content: st
   );
 };
 
-// Composant pour une carte de statistique avec tooltip
+// Composant pour une carte de statistique avec tooltip en desktop
 const StatCard = ({ 
   icon: Icon, 
   value, 
   label, 
+  fullLabel,
   tooltipContent 
 }: { 
   icon: React.ElementType, 
   value: number | string, 
   label: string,
+  fullLabel: string,
   tooltipContent: string
 }) => {
   return (
-    <Tooltip content={tooltipContent}>
-      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-white/20 cursor-help">
-        <div className="flex flex-col h-full justify-between">
-          <div className="flex items-center gap-1 md:gap-3 mb-1">
-            <Icon className="w-5 h-5 md:w-6 md:h-6 text-white shrink-0" />
+    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-white/20 relative group">
+      {/* Version desktop avec tooltip */}
+      <Tooltip content={tooltipContent}>
+        <div className="hidden md:flex items-center gap-1 md:gap-3 cursor-help">
+          <Icon className="w-5 h-5 md:w-6 md:h-6 text-white shrink-0" />
+          <div className="min-w-0 flex-1">
             <div className="text-base md:text-xl font-bold text-white truncate">{value}</div>
+            <div className="text-xs md:text-sm text-white/80 truncate">{label}</div>
           </div>
-          <div className="text-xs md:text-sm text-white/80 truncate mt-1">{label}</div>
         </div>
+      </Tooltip>
+
+      {/* Version mobile avec texte complet */}
+      <div className="md:hidden flex flex-col">
+        <div className="flex items-center gap-1 mb-1">
+          <Icon className="w-5 h-5 text-white shrink-0" />
+          <div className="text-base font-bold text-white">{value}</div>
+        </div>
+        <div className="text-xs text-white/80">{fullLabel}</div>
       </div>
-    </Tooltip>
+    </div>
   );
 };
 
@@ -115,6 +127,7 @@ export function StatsPanel() {
         icon={Briefcase} 
         value={activeOffers} 
         label="Offres actives" 
+        fullLabel="Offres d'emploi actives"
         tooltipContent="Nombre d'offres d'emploi actives"
       />
       
@@ -122,6 +135,7 @@ export function StatsPanel() {
         icon={Users} 
         value={userBeneficiaires.length} 
         label="Bénéficiaires" 
+        fullLabel="Bénéficiaires"
         tooltipContent="Nombre total de bénéficiaires"
       />
       
@@ -129,6 +143,7 @@ export function StatsPanel() {
         icon={UserCheck} 
         value={employedCount} 
         label="En emploi" 
+        fullLabel="Bénéficiaires en emploi"
         tooltipContent="Bénéficiaires ayant trouvé un emploi"
       />
       
@@ -136,6 +151,7 @@ export function StatsPanel() {
         icon={Send} 
         value={totalCandidates} 
         label="Candidatures" 
+        fullLabel="Candidatures soumises"
         tooltipContent="Nombre total de candidatures soumises"
       />
       
@@ -143,6 +159,7 @@ export function StatsPanel() {
         icon={Building2} 
         value={activeCompanies} 
         label="Entreprises actives" 
+        fullLabel="Entreprises actives"
         tooltipContent="Nombre d'entreprises partenaires actives"
       />
       
@@ -150,6 +167,7 @@ export function StatsPanel() {
         icon={CalendarClock} 
         value={upcomingEvents} 
         label="Événements à venir" 
+        fullLabel="Événements à venir"
         tooltipContent="Nombre d'événements planifiés"
       />
       
@@ -157,6 +175,7 @@ export function StatsPanel() {
         icon={Clock} 
         value={pendingAppointments} 
         label="RDV en attente" 
+        fullLabel="RDV en attente"
         tooltipContent="Rendez-vous planifiés en attente"
       />
       
@@ -164,25 +183,41 @@ export function StatsPanel() {
         icon={AlertCircle} 
         value={lateAppointments} 
         label="RDV en retard" 
+        fullLabel="RDV en retard"
         tooltipContent="Rendez-vous en retard ou manqués"
       />
       
-      <Tooltip content="Pourcentage de bénéficiaires ayant trouvé un emploi">
-        <div className="col-span-2 sm:col-span-1 md:col-span-1 bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-white/20 cursor-help">
-          <div className="flex flex-col h-full justify-between">
-            <div className="flex items-center gap-1 md:gap-3 mb-1">
-              <FileCheck className="w-5 h-5 md:w-6 md:h-6 text-white shrink-0" />
+      <div className="col-span-2 sm:col-span-1 md:col-span-1 bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-white/20 relative group">
+        {/* Version desktop avec tooltip */}
+        <Tooltip content="Pourcentage de bénéficiaires ayant trouvé un emploi">
+          <div className="hidden md:flex items-center gap-1 md:gap-3 cursor-help">
+            <FileCheck className="w-5 h-5 md:w-6 md:h-6 text-white shrink-0" />
+            <div className="min-w-0 flex-1">
               <div className="text-base md:text-xl font-bold text-white truncate">{placementRate}%</div>
-            </div>
-            <div className="text-xs md:text-sm text-white/80 truncate mt-1">
-              Taux de placement
-              <span className="text-xs text-white/70 hidden xs:inline ml-1">
-                {employedCount}/{userBeneficiaires.length}
-              </span>
+              <div className="text-xs md:text-sm text-white/80 truncate">
+                Taux de placement
+                <span className="text-xs text-white/70 hidden xs:inline ml-1">
+                  {employedCount}/{userBeneficiaires.length}
+                </span>
+              </div>
             </div>
           </div>
+        </Tooltip>
+
+        {/* Version mobile avec texte complet */}
+        <div className="md:hidden flex flex-col">
+          <div className="flex items-center gap-1 mb-1">
+            <FileCheck className="w-5 h-5 text-white shrink-0" />
+            <div className="text-base font-bold text-white">{placementRate}%</div>
+          </div>
+          <div className="text-xs text-white/80">
+            Taux de placement
+            <span className="text-xs text-white/70 ml-1">
+              {employedCount}/{userBeneficiaires.length}
+            </span>
+          </div>
         </div>
-      </Tooltip>
+      </div>
     </div>
   );
 }
