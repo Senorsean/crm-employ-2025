@@ -1,5 +1,5 @@
 import React from 'react';
-import { Briefcase, Users, Building2, FileCheck, CalendarClock, Send, UserCheck, Clock, AlertTriangle } from 'lucide-react';
+import { Briefcase, Users, Building2, FileCheck, CalendarClock, Send, UserCheck, Clock, AlertCircle } from 'lucide-react';
 import { useAgenciesStore } from '../../stores/agenciesStore';
 import { useBeneficiairesStore } from '../../stores/beneficiairesStore';
 import { useCompaniesStore } from '../../stores/companiesStore';
@@ -45,8 +45,8 @@ export function StatsPanel() {
   const placementRate = userBeneficiaires.length > 0 
     ? Math.round((employedCount / userBeneficiaires.length) * 100)
     : 0;
-    
-  // Count pending and late appointments
+
+  // Count appointments by status
   const pendingAppointments = appointments.filter(apt => apt.status === 'pending').length;
   const lateAppointments = appointments.filter(apt => apt.status === 'late').length;
 
@@ -120,25 +120,22 @@ export function StatsPanel() {
         </div>
       </div>
       
-      {/* Rendez-vous en attente et en retard */}
-      <div className="col-span-2 sm:col-span-3 md:col-span-2 bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-white/20">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1 md:gap-3">
-            <CalendarClock className="w-5 h-5 md:w-8 md:h-8 text-white shrink-0" />
-            <div className="min-w-0 flex-1">
-              <div className="text-xs md:text-sm text-white/80 truncate">Rendez-vous</div>
-            </div>
+      {/* Nouveaux compteurs pour les rendez-vous */}
+      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-white/20">
+        <div className="flex items-center gap-1 md:gap-3">
+          <Clock className="w-5 h-5 md:w-8 md:h-8 text-white shrink-0" />
+          <div className="min-w-0 flex-1">
+            <div className="text-base md:text-2xl font-bold text-white truncate">{pendingAppointments}</div>
+            <div className="text-xs md:text-sm text-white/80 truncate">RDV en attente</div>
           </div>
-          
-          <div className="flex gap-2">
-            <div className="flex items-center gap-1 bg-orange-500/20 px-2 py-1 rounded-full">
-              <Clock className="w-3 h-3 md:w-4 md:h-4 text-orange-300" />
-              <span className="text-xs text-orange-300 font-medium">{pendingAppointments} en attente</span>
-            </div>
-            <div className="flex items-center gap-1 bg-red-500/20 px-2 py-1 rounded-full">
-              <AlertTriangle className="w-3 h-3 md:w-4 md:h-4 text-red-300" />
-              <span className="text-xs text-red-300 font-medium">{lateAppointments} en retard</span>
-            </div>
+        </div>
+      </div>
+      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-white/20">
+        <div className="flex items-center gap-1 md:gap-3">
+          <AlertCircle className="w-5 h-5 md:w-8 md:h-8 text-white shrink-0" />
+          <div className="min-w-0 flex-1">
+            <div className="text-base md:text-2xl font-bold text-white truncate">{lateAppointments}</div>
+            <div className="text-xs md:text-sm text-white/80 truncate">RDV en retard</div>
           </div>
         </div>
       </div>

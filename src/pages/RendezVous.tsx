@@ -45,8 +45,7 @@ function RendezVous() {
     alerts, 
     isLoading: isLoadingAlerts, 
     loadAlerts, 
-    updateAlertStatus,
-    addAlert
+    updateAlertStatus 
   } = useAlertsStore();
 
   useEffect(() => {
@@ -63,51 +62,6 @@ function RendezVous() {
 
     return () => unsubscribe();
   }, [navigate, loadAppointments, loadAlerts]);
-
-  // Synchroniser les rendez-vous et les alertes
-  useEffect(() => {
-    const syncAppointmentsWithAlerts = async () => {
-      if (isLoadingAppointments || isLoadingAlerts) return;
-      
-      // Pour chaque rendez-vous, vérifier s'il existe une alerte correspondante
-      for (const appointment of appointments) {
-        const matchingAlert = alerts.find(alert => 
-          alert.type === 'rendez-vous' && 
-          alert.company === appointment.title &&
-          new Date(alert.date).toDateString() === new Date(appointment.date).toDateString()
-        );
-        
-        // Si le rendez-vous n'a pas d'alerte correspondante, en créer une
-        if (!matchingAlert && appointment.alert?.enabled) {
-          try {
-            await addAlert({
-              type: 'rendez-vous',
-              company: appointment.title,
-              date: appointment.date,
-              agency: appointment.agency,
-              status: appointment.status,
-              step: 1,
-              description: `Rendez-vous avec ${appointment.contact} (${appointment.agency})`,
-              action: `Prévu le ${new Date(appointment.date).toLocaleDateString('fr-FR')} à ${appointment.time}`
-            });
-          } catch (error) {
-            console.error('Error creating alert for appointment:', error);
-          }
-        }
-        
-        // Si le statut du rendez-vous et de l'alerte ne correspondent pas, les synchroniser
-        if (matchingAlert && matchingAlert.status !== appointment.status) {
-          try {
-            await updateAlertStatus(matchingAlert.id, appointment.status);
-          } catch (error) {
-            console.error('Error syncing alert status with appointment:', error);
-          }
-        }
-      }
-    };
-    
-    syncAppointmentsWithAlerts();
-  }, [appointments, alerts, isLoadingAppointments, isLoadingAlerts, addAlert, updateAlertStatus]);
 
   const handlePrevMonth = () => {
     setCurrentMonth(subMonths(currentMonth, 1));
@@ -203,40 +157,29 @@ function RendezVous() {
     }));
   };
 
+  // Filtrer les alertes pour n'afficher que celles de type 'rendez-vous'
+  // et éviter les doublons en utilisant appointmentId
+  const filteredAlerts = alerts.filter(alert => 
+    alert.type === 'rendez-vous' && 
+    alert.status !== 'completed'
+  );
+
+  // Compter les alertes par statut
+  const pendingAlertsCount = filteredAlerts.filter(a => a.status === 'pending').length;
+  const lateAlertsCount = filteredAlerts.filter(a => a.status === 'late').length;
+
   const handleUpdateStatus = async (alertId: string, status: Alert['status']) => {
     try {
       await updateAlertStatus(alertId, status);
       
-      // Trouver et mettre à jour le rendez-vous correspondant
+      // Trouver l'alerte pour obtenir l'appointmentId
       const alert = alerts.find(a => a.id === alertId);
-      if (alert && alert.type === 'rendez-vous') {
-        const matchingAppointment = appointments.find(apt => 
-          apt.title === alert.company && 
-          new Date(apt.date).toDateString() === new Date(alert.date).toDateString()
-        );
-        
-        if (matchingAppointment) {
-          await updateAppointmentStatus(matchingAppointment.id, status);
-        }
+      if (alert?.appointmentId) {
+        // Mettre à jour également le statut du rendez-vous
+        await updateAppointmentStatus(alert.appointmentId, status);
       }
     } catch (error) {
       console.error('Error updating alert status:', error);
-    }
-  };
-
-  const handleMarkAppointmentComplete = async (appointmentId: string) => {
-    try {
-      await updateAppointmentStatus(appointmentId, 'completed');
-    } catch (error) {
-      console.error('Error marking appointment as complete:', error);
-    }
-  };
-
-  const handleMarkAppointmentLate = async (appointmentId: string) => {
-    try {
-      await updateAppointmentStatus(appointmentId, 'late');
-    } catch (error) {
-      console.error('Error marking appointment as late:', error);
     }
   };
 
@@ -250,16 +193,6 @@ function RendezVous() {
       </div>
     );
   }
-
-  // Filtrer les alertes pour n'afficher que celles de type 'rendez-vous' et qui ne sont pas complétées
-  const appointmentAlerts = alerts.filter(alert => 
-    alert.type === 'rendez-vous' && 
-    alert.status !== 'completed'
-  );
-  
-  // Compter les alertes par statut
-  const pendingAlertsCount = appointmentAlerts.filter(alert => alert.status === 'pending').length;
-  const lateAlertsCount = appointmentAlerts.filter(alert => alert.status === 'late').length;
 
   return (
     <div className="space-y-8">
@@ -353,7 +286,7 @@ function RendezVous() {
                           )}
                         </div>
                       </div>
-                      <div className="flex flex-col items-end gap-2">
+                      <div className="flex items-center gap-2">
                         <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
                           apt.status === 'completed' 
                             ? darkMode ? 'bg-green-900 text-green-300' : 'bg-green-100 text-green-700'
@@ -364,28 +297,7 @@ function RendezVous() {
                           {apt.status === 'completed' ? 'Effectué' : 
                            apt.status === 'late' ? 'En retard' : 'En attente'}
                         </span>
-                        
-                        <div className="flex gap-2">
-                          {apt.status !== 'completed' && (
-                            <button
-                              onClick={() => handleMarkAppointmentComplete(apt.id)}
-                              className={`px-2 py-1 text-xs ${darkMode ? 'bg-green-900 text-green-300' : 'bg-green-50 text-green-600'} rounded-lg hover:${darkMode ? 'bg-green-800' : 'bg-green-100'}`}
-                            >
-                              Marquer effectué
-                            </button>
-                          )}
-                          
-                          {apt.status === 'pending' && (
-                            <button
-                              onClick={() => handleMarkAppointmentLate(apt.id)}
-                              className={`px-2 py-1 text-xs ${darkMode ? 'bg-red-900 text-red-300' : 'bg-red-50 text-red-600'} rounded-lg hover:${darkMode ? 'bg-red-800' : 'bg-red-100'}`}
-                            >
-                              Marquer en retard
-                            </button>
-                          )}
-                        </div>
-                        
-                        <div className="flex gap-2 mt-2">
+                        <div className="flex gap-2 ml-2">
                           <button
                             onClick={() => handleEditAppointment(apt)}
                             className={`p-1.5 ${darkMode ? 'bg-blue-900 text-blue-300' : 'bg-blue-50 text-blue-600'} rounded-lg hover:${darkMode ? 'bg-blue-800' : 'bg-blue-100'} transition-colors`}
@@ -424,29 +336,25 @@ function RendezVous() {
                   Alertes de relance
                 </h2>
                 <div className="flex gap-2">
-                  <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                    darkMode ? 'bg-orange-900 text-orange-300' : 'bg-orange-100 text-orange-700'
-                  }`}>
+                  <span className={`px-2.5 py-1 ${darkMode ? 'bg-orange-900 text-orange-300' : 'bg-orange-100 text-orange-700'} rounded-full text-sm`}>
                     {pendingAlertsCount} en attente
                   </span>
-                  <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                    darkMode ? 'bg-red-900 text-red-300' : 'bg-red-100 text-red-700'
-                  }`}>
+                  <span className={`px-2.5 py-1 ${darkMode ? 'bg-red-900 text-red-300' : 'bg-red-100 text-red-700'} rounded-full text-sm`}>
                     {lateAlertsCount} en retard
                   </span>
                 </div>
               </div>
 
               <div className="space-y-4">
-                {appointmentAlerts.map((alert) => (
+                {filteredAlerts.map((alert) => (
                   <div
                     key={alert.id}
                     className={`p-4 rounded-lg border ${
                       alert.status === 'completed' 
-                        ? darkMode ? 'border-green-800 bg-green-900/30' : 'border-green-100 bg-green-50'
+                        ? darkMode ? 'border-green-800 bg-green-900' : 'border-green-100 bg-green-50'
                         : alert.status === 'late'
-                        ? darkMode ? 'border-red-800 bg-red-900/30' : 'border-red-100 bg-red-50'
-                        : darkMode ? 'border-orange-800 bg-orange-900/30' : 'border-orange-100 bg-orange-50'
+                        ? darkMode ? 'border-red-800 bg-red-900' : 'border-red-100 bg-red-50'
+                        : darkMode ? 'border-orange-800 bg-orange-900' : 'border-orange-100 bg-orange-50'
                     }`}
                   >
                     <div className="flex items-center justify-between">
@@ -512,7 +420,7 @@ function RendezVous() {
                   </div>
                 ))}
 
-                {appointmentAlerts.length === 0 && (
+                {filteredAlerts.length === 0 && (
                   <p className={`text-center ${darkMode ? 'text-gray-400' : 'text-gray-500'} py-4`}>
                     Aucune alerte de relance pour le moment
                   </p>

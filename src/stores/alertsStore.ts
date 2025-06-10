@@ -14,6 +14,7 @@ export interface Alert {
   description?: string;
   action?: string;
   userId: string;
+  appointmentId?: string; // Ajout d'un champ pour lier l'alerte au rendez-vous
   createdAt: string; // ISO string format
   updatedAt: string; // ISO string format
 }
@@ -22,7 +23,7 @@ interface AlertsState {
   alerts: Alert[];
   isLoading: boolean;
   error: string | null;
-  addAlert: (alert: Omit<Alert, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => Promise<string>;
+  addAlert: (alert: Omit<Alert, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => Promise<void>;
   updateAlert: (id: string, alert: Partial<Alert>) => Promise<void>;
   deleteAlert: (id: string) => Promise<void>;
   loadAlerts: () => Promise<void>;
@@ -40,6 +41,16 @@ export const useAlertsStore = create<AlertsState>((set, get) => ({
     }
 
     try {
+      // Vérifier si une alerte existe déjà pour ce rendez-vous
+      if (alert.appointmentId) {
+        const existingAlerts = get().alerts.filter(a => a.appointmentId === alert.appointmentId);
+        if (existingAlerts.length > 0) {
+          console.log('Une alerte existe déjà pour ce rendez-vous, mise à jour au lieu de création');
+          await get().updateAlert(existingAlerts[0].id, alert);
+          return;
+        }
+      }
+
       const now = new Date().toISOString();
       const newAlert = {
         ...alert,
@@ -55,7 +66,7 @@ export const useAlertsStore = create<AlertsState>((set, get) => ({
         error: null
       }));
 
-      return docRef.id;
+      toast.success('Alerte créée avec succès');
     } catch (error) {
       console.error('Error adding alert:', error);
       const message = error instanceof Error ? error.message : 'Erreur lors de la création de l\'alerte';
@@ -85,6 +96,8 @@ export const useAlertsStore = create<AlertsState>((set, get) => ({
         ),
         error: null
       }));
+
+      toast.success('Alerte mise à jour avec succès');
     } catch (error) {
       console.error('Error updating alert:', error);
       const message = error instanceof Error ? error.message : 'Erreur lors de la mise à jour de l\'alerte';
@@ -105,6 +118,7 @@ export const useAlertsStore = create<AlertsState>((set, get) => ({
         alerts: state.alerts.filter(a => a.id !== id),
         error: null
       }));
+      toast.success('Alerte supprimée avec succès');
     } catch (error) {
       console.error('Error deleting alert:', error);
       const message = error instanceof Error ? error.message : 'Erreur lors de la suppression de l\'alerte';
@@ -160,6 +174,8 @@ export const useAlertsStore = create<AlertsState>((set, get) => ({
         ),
         error: null
       }));
+
+      toast.success('Statut de l\'alerte mis à jour avec succès');
     } catch (error) {
       console.error('Error updating alert status:', error);
       const message = error instanceof Error ? error.message : 'Erreur lors de la mise à jour du statut';
