@@ -14,7 +14,7 @@ export interface Alert {
   description?: string;
   action?: string;
   userId: string;
-  appointmentId?: string; // Ajout d'un champ pour lier l'alerte au rendez-vous
+  appointmentId?: string; // Référence à l'ID du rendez-vous associé
   createdAt: string; // ISO string format
   updatedAt: string; // ISO string format
 }
@@ -51,6 +51,24 @@ export const useAlertsStore = create<AlertsState>((set, get) => ({
         if (existingAlerts.length > 0) {
           console.log('Une alerte existe déjà pour ce rendez-vous, mise à jour au lieu de création');
           await get().updateAlert(existingAlerts[0].id, alert);
+          return;
+        }
+      }
+
+      // Vérifier également les doublons potentiels basés sur company+date pour les rendez-vous
+      if (alert.type === 'rendez-vous') {
+        const existingAlerts = get().alerts.filter(a => 
+          a.type === 'rendez-vous' && 
+          a.company === alert.company && 
+          a.date === alert.date
+        );
+        
+        if (existingAlerts.length > 0) {
+          console.log('Une alerte similaire existe déjà, mise à jour au lieu de création');
+          await get().updateAlert(existingAlerts[0].id, {
+            ...alert,
+            appointmentId: alert.appointmentId || existingAlerts[0].appointmentId
+          });
           return;
         }
       }

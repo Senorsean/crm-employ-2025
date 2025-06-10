@@ -158,19 +158,19 @@ function RendezVous() {
   };
 
   // Créer un Map pour dédupliquer les alertes par appointmentId
-  const uniqueAlerts = new Map<string, Alert>();
+  const uniqueAlerts = new Map();
   
   // Filtrer les alertes pour n'afficher que celles de type 'rendez-vous'
-  // et éviter les doublons en utilisant appointmentId
+  // et éviter les doublons en utilisant appointmentId ou company+date comme clé
   alerts
     .filter(alert => alert.type === 'rendez-vous' && alert.status !== 'completed')
     .forEach(alert => {
-      // Si l'alerte a un appointmentId, l'utiliser comme clé
-      if (alert.appointmentId) {
-        uniqueAlerts.set(alert.appointmentId, alert);
-      } else {
-        // Sinon, utiliser l'ID de l'alerte elle-même
-        uniqueAlerts.set(alert.id, alert);
+      // Créer une clé unique basée sur la date et l'entreprise si appointmentId n'existe pas
+      const key = alert.appointmentId || `${alert.company}-${alert.date}`;
+      
+      // Ne garder que la première alerte pour chaque clé unique
+      if (!uniqueAlerts.has(key)) {
+        uniqueAlerts.set(key, alert);
       }
     });
   
