@@ -157,12 +157,25 @@ function RendezVous() {
     }));
   };
 
+  // Créer un Map pour dédupliquer les alertes par appointmentId
+  const uniqueAlerts = new Map<string, Alert>();
+  
   // Filtrer les alertes pour n'afficher que celles de type 'rendez-vous'
   // et éviter les doublons en utilisant appointmentId
-  const filteredAlerts = alerts.filter(alert => 
-    alert.type === 'rendez-vous' && 
-    alert.status !== 'completed'
-  );
+  alerts
+    .filter(alert => alert.type === 'rendez-vous' && alert.status !== 'completed')
+    .forEach(alert => {
+      // Si l'alerte a un appointmentId, l'utiliser comme clé
+      if (alert.appointmentId) {
+        uniqueAlerts.set(alert.appointmentId, alert);
+      } else {
+        // Sinon, utiliser l'ID de l'alerte elle-même
+        uniqueAlerts.set(alert.id, alert);
+      }
+    });
+  
+  // Convertir le Map en tableau
+  const filteredAlerts = Array.from(uniqueAlerts.values());
 
   // Compter les alertes par statut
   const pendingAlertsCount = filteredAlerts.filter(a => a.status === 'pending').length;

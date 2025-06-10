@@ -116,20 +116,30 @@ export const useAppointmentsStore = create<AppointmentsState>((set, get) => ({
       }));
 
       // Mettre à jour l'alerte associée si elle existe
-      const { alerts, updateAlert } = useAlertsStore.getState();
-      const relatedAlert = alerts.find(alert => alert.appointmentId === id);
+      const { alerts, updateAlert, addAlert } = useAlertsStore.getState();
+      const relatedAlerts = alerts.filter(alert => 
+        alert.appointmentId === id && 
+        alert.type === 'rendez-vous'
+      );
       
-      if (relatedAlert) {
-        await updateAlert(relatedAlert.id, {
-          company: updates.title || relatedAlert.company,
-          date: updates.date || relatedAlert.date,
-          agency: updates.agency || relatedAlert.agency,
+      if (relatedAlerts.length > 0) {
+        // Mettre à jour la première alerte et supprimer les autres s'il y en a plusieurs
+        const [firstAlert, ...otherAlerts] = relatedAlerts;
+        
+        await updateAlert(firstAlert.id, {
+          company: updates.title || firstAlert.company,
+          date: updates.date || firstAlert.date,
+          agency: updates.agency || firstAlert.agency,
           description: `Rendez-vous avec ${updates.contact || updatedAppointment.contact}`,
           action: `Prévu le ${new Date(updates.date || updatedAppointment.date).toLocaleDateString('fr-FR')} à ${updates.time || updatedAppointment.time}`
         });
+        
+        // Supprimer les alertes en double si elles existent
+        for (const alert of otherAlerts) {
+          await useAlertsStore.getState().deleteAlert(alert.id);
+        }
       } else if (updates.alert?.enabled) {
         // Créer une nouvelle alerte si elle n'existe pas encore
-        const { addAlert } = useAlertsStore.getState();
         await addAlert({
           type: 'rendez-vous',
           company: updatedAppointment.title,
@@ -166,12 +176,15 @@ export const useAppointmentsStore = create<AppointmentsState>((set, get) => ({
         error: null
       }));
 
-      // Supprimer l'alerte associée si elle existe
+      // Supprimer toutes les alertes associées à ce rendez-vous
       const { alerts, deleteAlert } = useAlertsStore.getState();
-      const relatedAlert = alerts.find(alert => alert.appointmentId === id);
+      const relatedAlerts = alerts.filter(alert => 
+        alert.appointmentId === id && 
+        alert.type === 'rendez-vous'
+      );
       
-      if (relatedAlert) {
-        await deleteAlert(relatedAlert.id);
+      for (const alert of relatedAlerts) {
+        await deleteAlert(alert.id);
       }
 
       toast.success('Rendez-vous supprimé avec succès');
@@ -231,12 +244,15 @@ export const useAppointmentsStore = create<AppointmentsState>((set, get) => ({
         error: null
       }));
 
-      // Mettre à jour le statut de l'alerte associée si elle existe
+      // Mettre à jour le statut de toutes les alertes associées à ce rendez-vous
       const { alerts, updateAlertStatus } = useAlertsStore.getState();
-      const relatedAlert = alerts.find(alert => alert.appointmentId === id);
+      const relatedAlerts = alerts.filter(alert => 
+        alert.appointmentId === id && 
+        alert.type === 'rendez-vous'
+      );
       
-      if (relatedAlert) {
-        await updateAlertStatus(relatedAlert.id, status);
+      for (const alert of relatedAlerts) {
+        await updateAlertStatus(alert.id, status);
       }
 
       toast.success('Statut du rendez-vous mis à jour avec succès');

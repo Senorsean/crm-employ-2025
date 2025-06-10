@@ -43,7 +43,11 @@ export const useAlertsStore = create<AlertsState>((set, get) => ({
     try {
       // Vérifier si une alerte existe déjà pour ce rendez-vous
       if (alert.appointmentId) {
-        const existingAlerts = get().alerts.filter(a => a.appointmentId === alert.appointmentId);
+        const existingAlerts = get().alerts.filter(a => 
+          a.appointmentId === alert.appointmentId && 
+          a.type === 'rendez-vous'
+        );
+        
         if (existingAlerts.length > 0) {
           console.log('Une alerte existe déjà pour ce rendez-vous, mise à jour au lieu de création');
           await get().updateAlert(existingAlerts[0].id, alert);
