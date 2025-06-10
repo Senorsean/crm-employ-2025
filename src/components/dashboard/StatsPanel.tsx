@@ -64,90 +64,98 @@ export function StatsPanel() {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-9 gap-2 md:gap-4 w-full">
       <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-white/20">
-        <div className="flex items-center gap-1 md:gap-3">
-          <Briefcase className="w-5 h-5 md:w-8 md:h-8 text-white shrink-0" />
-          <div className="min-w-0 flex-1">
-            <div className="text-base md:text-2xl font-bold text-white truncate">{activeOffers}</div>
-            <div className="text-xs md:text-sm text-white/80 truncate">Offres actives</div>
+        <div className="flex flex-col h-full justify-between">
+          <div className="flex items-center gap-1 md:gap-3 mb-1">
+            <Briefcase className="w-5 h-5 md:w-6 md:h-6 text-white shrink-0" />
+            <div className="text-base md:text-xl font-bold text-white truncate">{activeOffers}</div>
           </div>
+          <div className="text-xs md:text-sm text-white/80 truncate mt-1">Offres actives</div>
         </div>
       </div>
+      
       <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-white/20">
-        <div className="flex items-center gap-1 md:gap-3">
-          <Users className="w-5 h-5 md:w-8 md:h-8 text-white shrink-0" />
-          <div className="min-w-0 flex-1">
-            <div className="text-base md:text-2xl font-bold text-white truncate">{userBeneficiaires.length}</div>
-            <div className="text-xs md:text-sm text-white/80 truncate">Bénéficiaires</div>
+        <div className="flex flex-col h-full justify-between">
+          <div className="flex items-center gap-1 md:gap-3 mb-1">
+            <Users className="w-5 h-5 md:w-6 md:h-6 text-white shrink-0" />
+            <div className="text-base md:text-xl font-bold text-white truncate">{userBeneficiaires.length}</div>
           </div>
+          <div className="text-xs md:text-sm text-white/80 truncate mt-1">Bénéficiaires</div>
         </div>
       </div>
+      
       <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-white/20">
-        <div className="flex items-center gap-1 md:gap-3">
-          <UserCheck className="w-5 h-5 md:w-8 md:h-8 text-white shrink-0" />
-          <div className="min-w-0 flex-1">
-            <div className="text-base md:text-2xl font-bold text-white truncate">{employedCount}</div>
-            <div className="text-xs md:text-sm text-white/80 truncate">En emploi</div>
+        <div className="flex flex-col h-full justify-between">
+          <div className="flex items-center gap-1 md:gap-3 mb-1">
+            <UserCheck className="w-5 h-5 md:w-6 md:h-6 text-white shrink-0" />
+            <div className="text-base md:text-xl font-bold text-white truncate">{employedCount}</div>
           </div>
+          <div className="text-xs md:text-sm text-white/80 truncate mt-1">En emploi</div>
         </div>
       </div>
+      
       <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-white/20">
-        <div className="flex items-center gap-1 md:gap-3">
-          <Send className="w-5 h-5 md:w-8 md:h-8 text-white shrink-0" />
-          <div className="min-w-0 flex-1">
-            <div className="text-base md:text-2xl font-bold text-white truncate">{totalCandidates}</div>
-            <div className="text-xs md:text-sm text-white/80 truncate">Candidatures</div>
+        <div className="flex flex-col h-full justify-between">
+          <div className="flex items-center gap-1 md:gap-3 mb-1">
+            <Send className="w-5 h-5 md:w-6 md:h-6 text-white shrink-0" />
+            <div className="text-base md:text-xl font-bold text-white truncate">{totalCandidates}</div>
           </div>
+          <div className="text-xs md:text-sm text-white/80 truncate mt-1">Candidatures</div>
         </div>
       </div>
+      
       <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-white/20">
-        <div className="flex items-center gap-1 md:gap-3">
-          <Building2 className="w-5 h-5 md:w-8 md:h-8 text-white shrink-0" />
-          <div className="min-w-0 flex-1">
-            <div className="text-base md:text-2xl font-bold text-white truncate">{activeCompanies}</div>
-            <div className="text-xs md:text-sm text-white/80 truncate">Entreprises actives</div>
+        <div className="flex flex-col h-full justify-between">
+          <div className="flex items-center gap-1 md:gap-3 mb-1">
+            <Building2 className="w-5 h-5 md:w-6 md:h-6 text-white shrink-0" />
+            <div className="text-base md:text-xl font-bold text-white truncate">{activeCompanies}</div>
           </div>
+          <div className="text-xs md:text-sm text-white/80 truncate mt-1">Entreprises actives</div>
         </div>
       </div>
+      
       <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-white/20">
-        <div className="flex items-center gap-1 md:gap-3">
-          <CalendarClock className="w-5 h-5 md:w-8 md:h-8 text-white shrink-0" />
-          <div className="min-w-0 flex-1">
-            <div className="text-base md:text-2xl font-bold text-white truncate">{upcomingEvents}</div>
-            <div className="text-xs md:text-sm text-white/80 truncate">Événements à venir</div>
+        <div className="flex flex-col h-full justify-between">
+          <div className="flex items-center gap-1 md:gap-3 mb-1">
+            <CalendarClock className="w-5 h-5 md:w-6 md:h-6 text-white shrink-0" />
+            <div className="text-base md:text-xl font-bold text-white truncate">{upcomingEvents}</div>
           </div>
+          <div className="text-xs md:text-sm text-white/80 truncate mt-1">Événements à venir</div>
         </div>
       </div>
       
       {/* Nouveaux compteurs pour les rendez-vous */}
       <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-white/20">
-        <div className="flex items-center gap-1 md:gap-3">
-          <Clock className="w-5 h-5 md:w-8 md:h-8 text-white shrink-0" />
-          <div className="min-w-0 flex-1">
-            <div className="text-base md:text-2xl font-bold text-white truncate">{pendingAppointments}</div>
-            <div className="text-xs md:text-sm text-white/80 truncate">RDV en attente</div>
+        <div className="flex flex-col h-full justify-between">
+          <div className="flex items-center gap-1 md:gap-3 mb-1">
+            <Clock className="w-5 h-5 md:w-6 md:h-6 text-white shrink-0" />
+            <div className="text-base md:text-xl font-bold text-white truncate">{pendingAppointments}</div>
           </div>
-        </div>
-      </div>
-      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-white/20">
-        <div className="flex items-center gap-1 md:gap-3">
-          <AlertCircle className="w-5 h-5 md:w-8 md:h-8 text-white shrink-0" />
-          <div className="min-w-0 flex-1">
-            <div className="text-base md:text-2xl font-bold text-white truncate">{lateAppointments}</div>
-            <div className="text-xs md:text-sm text-white/80 truncate">RDV en retard</div>
-          </div>
+          <div className="text-xs md:text-sm text-white/80 truncate mt-1">RDV en attente</div>
         </div>
       </div>
       
-      {/* Placement rate card takes full width on mobile (2 columns) */}
+      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-white/20">
+        <div className="flex flex-col h-full justify-between">
+          <div className="flex items-center gap-1 md:gap-3 mb-1">
+            <AlertCircle className="w-5 h-5 md:w-6 md:h-6 text-white shrink-0" />
+            <div className="text-base md:text-xl font-bold text-white truncate">{lateAppointments}</div>
+          </div>
+          <div className="text-xs md:text-sm text-white/80 truncate mt-1">RDV en retard</div>
+        </div>
+      </div>
+      
+      {/* Placement rate card */}
       <div className="col-span-2 sm:col-span-1 md:col-span-1 bg-white/10 backdrop-blur-sm rounded-xl p-2 md:p-4 border border-white/20">
-        <div className="flex items-center gap-1 md:gap-3">
-          <FileCheck className="w-5 h-5 md:w-8 md:h-8 text-white shrink-0" />
-          <div className="min-w-0 flex-1">
-            <div className="text-base md:text-2xl font-bold text-white truncate">{placementRate}%</div>
-            <div className="text-xs md:text-sm text-white/80 truncate">Taux de placement</div>
-            <div className="text-xs text-white/70 hidden xs:block">
+        <div className="flex flex-col h-full justify-between">
+          <div className="flex items-center gap-1 md:gap-3 mb-1">
+            <FileCheck className="w-5 h-5 md:w-6 md:h-6 text-white shrink-0" />
+            <div className="text-base md:text-xl font-bold text-white truncate">{placementRate}%</div>
+          </div>
+          <div className="text-xs md:text-sm text-white/80 truncate mt-1">
+            Taux de placement
+            <span className="text-xs text-white/70 hidden xs:inline ml-1">
               {employedCount}/{userBeneficiaires.length}
-            </div>
+            </span>
           </div>
         </div>
       </div>
