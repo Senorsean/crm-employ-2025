@@ -1,5 +1,15 @@
 import React, { useState } from 'react';
-import { Briefcase, Users, Building2, FileCheck, CalendarClock, Send, UserCheck, Clock, AlertCircle } from 'lucide-react';
+import { 
+  Briefcase, 
+  Users, 
+  Building2, 
+  FileCheck, 
+  CalendarClock, 
+  Send, 
+  UserCheck, 
+  Clock, 
+  AlertCircle 
+} from 'lucide-react';
 import { useAgenciesStore } from '../../stores/agenciesStore';
 import { useBeneficiairesStore } from '../../stores/beneficiairesStore';
 import { useCompaniesStore } from '../../stores/companiesStore';
@@ -134,15 +144,15 @@ export function StatsPanel() {
       <StatCard 
         icon={Users} 
         value={userBeneficiaires.length} 
-        label="Total Bénéficiaires" 
-        fullLabel="Bénéficiaires"
+        label="Bénéficiaires" 
+        fullLabel="Total bénéficiaires"
         tooltipContent="Nombre total de bénéficiaires"
       />
       
       <StatCard 
         icon={UserCheck} 
         value={employedCount} 
-        label="Bénéficiaires en emploi" 
+        label="Emploi" 
         fullLabel="Bénéficiaires en emploi"
         tooltipContent="Bénéficiaires ayant trouvé un emploi"
       />
@@ -150,7 +160,7 @@ export function StatsPanel() {
       <StatCard 
         icon={Send} 
         value={totalCandidates} 
-        label="Total candidatures" 
+        label="Candidatures" 
         fullLabel="Candidatures soumises"
         tooltipContent="Nombre total de candidatures soumises"
       />
@@ -174,7 +184,7 @@ export function StatsPanel() {
       <StatCard 
         icon={Clock} 
         value={pendingAppointments} 
-        label="RDV attente" 
+        label="Attente" 
         fullLabel="RDV en attente"
         tooltipContent="Rendez-vous planifiés en attente"
       />
@@ -182,7 +192,7 @@ export function StatsPanel() {
       <StatCard 
         icon={AlertCircle} 
         value={lateAppointments} 
-        label="RDV retard" 
+        label="Retard" 
         fullLabel="RDV en retard"
         tooltipContent="Rendez-vous en retard ou manqués"
       />
@@ -195,7 +205,7 @@ export function StatsPanel() {
             <div className="min-w-0 flex-1">
               <div className="text-base md:text-xl font-bold text-white truncate">{placementRate}%</div>
               <div className="text-xs md:text-sm text-white/80 truncate">
-                % de placement
+                Placement
                 <span className="text-xs text-white/70 hidden xs:inline ml-1">
                   {employedCount}/{userBeneficiaires.length}
                 </span>
